@@ -1,15 +1,15 @@
-import { BarChart3, CircleCheck, CircleX, Percent } from 'lucide-react'
+import { BarChart3, CircleCheck, CircleDot, CircleX } from 'lucide-react'
 
 function ResultsDashboard({ results }) {
   const totalRecords = results.length
   const matchedRecords = results.filter((result) => result.matchStatus === 'Matched').length
-  const unmatchedRecords = totalRecords - matchedRecords
-  const matchPercentage = totalRecords === 0 ? 0 : Math.round((matchedRecords / totalRecords) * 100)
+  const partialRecords = results.filter((result) => result.matchStatus === 'Partial Match').length
+  const noMatchRecords = totalRecords - matchedRecords - partialRecords
   const stats = [
     { label: 'Total Records', value: totalRecords, icon: BarChart3, tone: 'bg-slate-100 text-slate-600' },
     { label: 'Matched', value: matchedRecords, icon: CircleCheck, tone: 'bg-emerald-100 text-[#16A34A]' },
-    { label: 'Unmatched', value: unmatchedRecords, icon: CircleX, tone: 'bg-amber-100 text-amber-700' },
-    { label: 'Match %', value: `${matchPercentage}%`, icon: Percent, tone: 'bg-yellow-100 text-yellow-700' },
+    { label: 'Partial Match', value: partialRecords, icon: CircleDot, tone: 'bg-amber-100 text-amber-700' },
+    { label: 'No Match', value: noMatchRecords, icon: CircleX, tone: 'bg-rose-100 text-rose-700' },
   ]
 
   return (

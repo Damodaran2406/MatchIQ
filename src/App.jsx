@@ -17,7 +17,6 @@ function App() {
   const [linkTextColumn, setLinkTextColumn] = useState('')
   const [isMatchingSetupVisible, setIsMatchingSetupVisible] = useState(false)
   const [matchingMethod, setMatchingMethod] = useState('exact')
-  const [similarityThreshold, setSimilarityThreshold] = useState(80)
   const [matchingResults, setMatchingResults] = useState(null)
   const [isMatching, setIsMatching] = useState(false)
   const [isParsing, setIsParsing] = useState(false)
@@ -53,7 +52,6 @@ function App() {
       inputColumn,
       linkTextColumn,
       method: matchingMethod,
-      threshold: similarityThreshold,
     }))
     setIsMatching(false)
   }
@@ -189,9 +187,7 @@ function App() {
             {isMatchingSetupVisible && (
               <MatchingControls
                 method={matchingMethod}
-                threshold={similarityThreshold}
                 onMethodChange={(method) => { setMatchingMethod(method); setMatchingResults(null) }}
-                onThresholdChange={(threshold) => { setSimilarityThreshold(threshold); setMatchingResults(null) }}
                 onRunMatching={handleRunMatching}
                 isRunning={isMatching}
               />

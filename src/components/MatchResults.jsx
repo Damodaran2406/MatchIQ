@@ -3,6 +3,12 @@ import { ArrowDownUp, ChevronLeft, ChevronRight, Download, Search } from 'lucide
 
 const PAGE_SIZE = 10
 
+const STATUS_BADGE_STYLES = {
+  Matched: 'bg-emerald-50 text-[#16A34A] ring-1 ring-inset ring-emerald-200',
+  'Partial Match': 'bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200',
+  'No Match': 'bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-200',
+}
+
 function compareValues(first, second) {
   const firstNumber = Number(first)
   const secondNumber = Number(second)
@@ -19,6 +25,7 @@ function MatchResults({ headers, results, onExport }) {
   const [sort, setSort] = useState({ column: null, direction: 'asc' })
   const [currentPage, setCurrentPage] = useState(1)
   const matchedCount = results.filter((result) => result.matchStatus === 'Matched').length
+  const partialCount = results.filter((result) => result.matchStatus === 'Partial Match').length
 
   const columns = useMemo(() => [
     ...headers.map((header, index) => ({ key: `original-${index}`, label: header, getValue: (result) => result.originalRow[index] })),
@@ -75,7 +82,7 @@ function MatchResults({ headers, results, onExport }) {
             <p className="mt-1 text-sm text-slate-500">Original spreadsheet data with appended match results.</p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <span className="rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-[#16A34A]">{matchedCount} of {results.length} matched</span>
+            <span className="rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-[#16A34A]">{matchedCount} matched · {partialCount} partial · {results.length} total</span>
             <button type="button" onClick={onExport} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#16A34A] px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-emerald-200 transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-[#16A34A] focus:ring-offset-2"><Download className="h-4 w-4" />Export to Excel</button>
           </div>
         </div>
@@ -113,7 +120,7 @@ function MatchResults({ headers, results, onExport }) {
                 <td className="max-w-xs whitespace-nowrap px-4 py-3 font-mono text-xs text-slate-600"><span className="block truncate">{result.normalizedValue || '—'}</span></td>
                 <td className="max-w-xs whitespace-nowrap px-4 py-3 text-slate-700"><span className="block truncate">{result.matchedValue || '—'}</span></td>
                 <td className="whitespace-nowrap px-4 py-3 font-semibold text-slate-700">{result.matchScore}%</td>
-                <td className="whitespace-nowrap px-4 py-3"><span className={`rounded-full px-2.5 py-1 text-xs font-bold ${result.matchStatus === 'Matched' ? 'bg-emerald-50 text-[#16A34A] ring-1 ring-inset ring-emerald-200' : 'bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-200'}`}>{result.matchStatus}</span></td>
+                <td className="whitespace-nowrap px-4 py-3"><span className={`rounded-full px-2.5 py-1 text-xs font-bold ${STATUS_BADGE_STYLES[result.matchStatus]}`}>{result.matchStatus}</span></td>
               </tr>
             ))}
           </tbody>
