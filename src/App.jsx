@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Bell, Leaf, Menu, ShieldCheck, Sparkles, UserRound, Workflow } from 'lucide-react'
+import { CircleHelp, Database, LayoutDashboard, Menu, ShieldCheck, Workflow, X } from 'lucide-react'
 import ColumnSelection from './components/ColumnSelection'
 import ExcelPreview from './components/ExcelPreview'
 import ExcelUpload from './components/ExcelUpload'
@@ -22,6 +22,7 @@ function App() {
   const [isMatching, setIsMatching] = useState(false)
   const [isParsing, setIsParsing] = useState(false)
   const [parseError, setParseError] = useState('')
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
 
   async function handleFileSelected(file) {
     setIsParsing(true)
@@ -67,79 +68,115 @@ function App() {
     })
   }
 
+  const workflowSteps = [
+    {
+      step: '1',
+      title: 'Data source',
+      description: spreadsheet ? spreadsheet.fileName : 'Upload XLSX or CSV data',
+      state: spreadsheet ? 'complete' : 'active',
+    },
+    {
+      step: '2',
+      title: 'Match configuration',
+      description: inputColumn && linkTextColumn ? 'Columns selected' : 'Map columns and rules',
+      state: spreadsheet ? (inputColumn && linkTextColumn ? 'complete' : 'active') : 'upcoming',
+    },
+    {
+      step: '3',
+      title: 'Results',
+      description: matchingResults ? 'Ready to review and export' : 'Run matching to populate',
+      state: matchingResults ? 'complete' : spreadsheet && isMatchingSetupVisible ? 'active' : 'upcoming',
+    },
+  ]
+
   return (
-    <div className="min-h-screen bg-[#F4FBF6] text-slate-900">
-      <header className="sticky top-0 z-30 border-b border-emerald-100/90 bg-white/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-[72px] max-w-[1400px] items-center justify-between px-4 sm:px-6 lg:px-8">
-          <a href="#workspace" className="flex items-center gap-3" aria-label="Excel Match home">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#16A34A] text-white shadow-lg shadow-emerald-200"><Leaf className="h-5 w-5" /></span>
-            <span>
-              <span className="block text-base font-bold tracking-tight text-slate-900">Excel Match</span>
-              <span className="hidden text-xs font-medium text-slate-500 sm:block">Data intelligence workspace</span>
+    <div className="min-h-screen overflow-x-hidden bg-[#F4FBF6] text-slate-900">
+      <header className="sticky top-0 z-30 border-b border-emerald-100 bg-white/95 shadow-sm shadow-emerald-950/5 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+          <a href="#workspace" className="flex min-w-0 items-center gap-3" aria-label="MatchIQ home">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#16A34A] text-sm font-bold tracking-wide text-white shadow-sm shadow-emerald-200">MI</span>
+            <span className="min-w-0">
+              <span className="block truncate text-base font-bold tracking-tight text-slate-900">MatchIQ</span>
+              <span className="hidden truncate text-xs font-medium text-slate-500 sm:block">Intelligent Excel Data Matching Platform</span>
             </span>
           </a>
 
-          <nav className="hidden items-center gap-7 lg:flex" aria-label="Primary navigation">
-            <a href="#workspace" className="text-sm font-semibold text-[#16A34A]">Workspace</a>
-            <a href="#results" className="text-sm font-medium text-slate-500 transition hover:text-slate-900">Results</a>
-            <a href="#preview" className="text-sm font-medium text-slate-500 transition hover:text-slate-900">Data preview</a>
+          <nav className="hidden items-center gap-1 rounded-xl border border-emerald-100 bg-[#F4FBF6] p-1 lg:flex" aria-label="Primary navigation">
+            <a href="#workspace" className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-[#16A34A] shadow-sm"><LayoutDashboard className="h-4 w-4" />Dashboard</a>
+            <a href="#preview" className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-white hover:text-slate-900"><Database className="h-4 w-4" />Data</a>
+            <a href="#help" className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-white hover:text-slate-900"><CircleHelp className="h-4 w-4" />Help</a>
           </nav>
 
-          <div className="flex items-center gap-2 sm:gap-3">
-            <button type="button" aria-label="Open navigation" className="rounded-xl p-2 text-slate-500 transition hover:bg-emerald-50 hover:text-[#16A34A] lg:hidden"><Menu className="h-5 w-5" /></button>
-            <button type="button" aria-label="Notifications" className="relative hidden rounded-xl p-2.5 text-slate-500 transition hover:bg-emerald-50 hover:text-[#16A34A] sm:inline-flex"><Bell className="h-5 w-5" /><span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-[#FACC15] ring-2 ring-white" /></button>
-            <span className="hidden text-right sm:block"><span className="block text-sm font-semibold text-slate-700">Alex Morgan</span><span className="block text-xs text-slate-500">Workspace owner</span></span>
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-[#16A34A] ring-4 ring-emerald-50"><UserRound className="h-5 w-5" /></span>
+          <div className="flex shrink-0 items-center gap-2">
+            <span className="hidden items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-[#16A34A] sm:inline-flex"><ShieldCheck className="h-3.5 w-3.5" />Secure workspace</span>
+            <button
+              type="button"
+              aria-label={isMobileNavOpen ? 'Close navigation' : 'Open navigation'}
+              aria-expanded={isMobileNavOpen}
+              onClick={() => setIsMobileNavOpen((open) => !open)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-100 bg-white text-slate-600 transition hover:bg-emerald-50 hover:text-[#16A34A] focus:outline-none focus:ring-2 focus:ring-[#16A34A] focus:ring-offset-2 lg:hidden"
+            >
+              {isMobileNavOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            </button>
           </div>
         </div>
+
+        {isMobileNavOpen && (
+          <nav className="border-t border-emerald-100 bg-white px-4 py-3 lg:hidden" aria-label="Primary navigation">
+            <div className="flex flex-col gap-1">
+              <a href="#workspace" onClick={() => setIsMobileNavOpen(false)} className="inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-[#16A34A]"><LayoutDashboard className="h-4 w-4" />Dashboard</a>
+              <a href="#preview" onClick={() => setIsMobileNavOpen(false)} className="inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-600 hover:bg-emerald-50"><Database className="h-4 w-4" />Data</a>
+              <a href="#help" onClick={() => setIsMobileNavOpen(false)} className="inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-600 hover:bg-emerald-50"><CircleHelp className="h-4 w-4" />Help</a>
+            </div>
+          </nav>
+        )}
       </header>
 
-      <main id="workspace" className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
-        <section className="relative overflow-hidden rounded-2xl bg-slate-900 px-6 py-8 text-white shadow-xl shadow-emerald-950/10 sm:px-8 sm:py-10">
-          <div className="absolute -right-16 -top-24 h-56 w-56 rounded-full bg-[#16A34A]/40 blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 h-24 w-24 rounded-full bg-[#FACC15]/20 blur-2xl" />
-          <div className="relative max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-emerald-100"><Sparkles className="h-3.5 w-3.5 text-[#FACC15]" />Enterprise matching workspace</div>
-            <h1 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl">Make your spreadsheet data work harder.</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">Upload a source file, configure your matching strategy, and review precise, export-ready results in one secure workspace.</p>
+      <main id="workspace" className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <section className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm shadow-emerald-950/5 sm:p-6">
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-center">
+            <div className="min-w-0">
+              <div className="inline-flex items-center gap-2 rounded-full bg-yellow-50 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-yellow-700 ring-1 ring-inset ring-yellow-100"><Workflow className="h-3.5 w-3.5" />MatchIQ</div>
+              <h1 className="mt-4 max-w-3xl text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">Turn spreadsheet data into reliable matches.</h1>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">Upload your Excel or CSV file, configure matching rules, review results, and export clean data.</p>
+            </div>
+
+            <div id="help" className="rounded-xl border border-emerald-100 bg-[#F4FBF6] p-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-[#16A34A]">Workflow</p>
+              <ol className="mt-4 space-y-3">
+                {workflowSteps.map((item) => {
+                  const isComplete = item.state === 'complete'
+                  const isActive = item.state === 'active'
+
+                  return (
+                    <li key={item.step} className="flex gap-3">
+                      <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${isComplete || isActive ? 'bg-[#16A34A] text-white' : 'bg-white text-slate-500 ring-1 ring-inset ring-emerald-100'}`}>{item.step}</span>
+                      <span className="min-w-0"><span className="block truncate text-sm font-semibold text-slate-800">{item.title}</span><span className="mt-0.5 block truncate text-xs leading-5 text-slate-500">{item.description}</span></span>
+                    </li>
+                  )
+                })}
+              </ol>
+            </div>
           </div>
         </section>
 
-        <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
-          <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm shadow-emerald-950/5 sm:p-7" aria-labelledby="upload-title">
-            <div className="flex flex-col gap-4 border-b border-slate-100 pb-5 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[#16A34A]"><span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 text-[10px]">1</span>Data source</div>
-                <h2 id="upload-title" className="mt-3 text-xl font-bold tracking-tight text-slate-900">Upload a spreadsheet</h2>
-                <p className="mt-2 text-sm leading-6 text-slate-500">Import a CSV or Excel workbook. Your source data stays unchanged.</p>
-              </div>
-              <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-yellow-50 px-3 py-1.5 text-xs font-semibold text-yellow-700"><ShieldCheck className="h-3.5 w-3.5" />Secure processing</span>
+        <section className="mt-5 rounded-xl border border-emerald-100 bg-white p-5 shadow-sm shadow-emerald-950/5 sm:p-6" aria-labelledby="upload-title">
+          <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-[#16A34A]">Step 1 - Data Source</p>
+              <h2 id="upload-title" className="mt-1 text-lg font-bold tracking-tight text-slate-900">Upload a spreadsheet</h2>
+              <p className="mt-1 text-sm leading-6 text-slate-500">Import an XLSX or CSV file. The source data remains unchanged.</p>
             </div>
-            <div className="mt-6"><ExcelUpload onFileSelected={handleFileSelected} /></div>
-            {isParsing && <p className="mt-4 inline-flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm font-semibold text-[#16A34A]"><Workflow className="h-4 w-4 animate-pulse" />Reading spreadsheet...</p>}
-            {parseError && <p className="mt-4 rounded-xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 ring-1 ring-inset ring-rose-100" role="alert">{parseError}</p>}
-          </section>
+            <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-[#16A34A] ring-1 ring-inset ring-emerald-100"><ShieldCheck className="h-3.5 w-3.5" />Local processing</span>
+          </div>
 
-          <aside className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm shadow-emerald-950/5 sm:p-6">
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#16A34A]">Workflow</p>
-            <h2 className="mt-2 text-lg font-bold tracking-tight text-slate-900">From file to insight</h2>
-            <ol className="mt-6 space-y-5">
-              {[
-                ['1', 'Upload your file', 'Import CSV or XLSX data'],
-                ['2', 'Map your columns', 'Choose values to compare'],
-                ['3', 'Review results', 'Export your matched records'],
-              ].map(([step, title, description], index) => (
-                <li key={step} className="flex gap-3">
-                  <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${index === 0 ? 'bg-[#16A34A] text-white' : 'bg-emerald-50 text-[#16A34A]'}`}>{step}</span>
-                  <span><span className="block text-sm font-semibold text-slate-700">{title}</span><span className="mt-0.5 block text-xs leading-5 text-slate-500">{description}</span></span>
-                </li>
-              ))}
-            </ol>
-          </aside>
-        </div>
+          <div className="mt-5"><ExcelUpload onFileSelected={handleFileSelected} /></div>
+          {isParsing && <p className="mt-4 inline-flex items-center gap-2 rounded-xl bg-emerald-50 px-3 py-2 text-sm font-semibold text-[#16A34A] ring-1 ring-inset ring-emerald-100"><Workflow className="h-4 w-4 animate-pulse" />Reading spreadsheet...</p>}
+          {parseError && <p className="mt-4 rounded-xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 ring-1 ring-inset ring-rose-100" role="alert">{parseError}</p>}
+        </section>
 
         {spreadsheet && (
-          <div className="mt-6 space-y-6">
+          <div className="mt-5 space-y-5">
             <FileSummary fileName={spreadsheet.fileName} headers={spreadsheet.headers} rowCount={spreadsheet.rows.length} />
             <ColumnSelection
               headers={spreadsheet.headers}
@@ -159,9 +196,15 @@ function App() {
                 isRunning={isMatching}
               />
             )}
-            {matchingResults && <div id="results"><ResultsDashboard results={matchingResults} /></div>}
-            {matchingResults && <MatchResults headers={spreadsheet.headers} results={matchingResults} onExport={handleExport} />}
-            <div id="preview"><ExcelPreview headers={spreadsheet.headers} rows={spreadsheet.rows} /></div>
+            {matchingResults && (
+              <section id="results" className="space-y-5" aria-label="Step 3 results">
+                <ResultsDashboard results={matchingResults} />
+                <MatchResults headers={spreadsheet.headers} results={matchingResults} onExport={handleExport} />
+              </section>
+            )}
+            <div id="preview">
+              <ExcelPreview headers={spreadsheet.headers} rows={spreadsheet.rows} />
+            </div>
           </div>
         )}
       </main>
