@@ -1,7 +1,16 @@
 import Fuse from 'fuse.js'
 
+const DIACRITIC_MARKS = /[̀-ͯ]/g
+const INVISIBLE_WHITESPACE = /[ ​‌‍﻿]/g
+
 export function normalizeText(value) {
-  return String(value ?? '')
+  if (value === null || value === undefined) return ''
+
+  return String(value)
+    .normalize('NFKD')
+    .replace(DIACRITIC_MARKS, '') // strip accents so "Pó" and "Po" compare equal
+    .replace(INVISIBLE_WHITESPACE, ' ') // NBSP and zero-width chars -> space
+    .trim()
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, ' ')
     .trim()
@@ -95,7 +104,7 @@ export function matchRows({ rows, headers, inputColumn, linkTextColumn, method, 
       originalRow: row,
       originalValue: String(inputValue ?? ''),
       normalizedValue,
-      matchedValue: isMatch ? match.value : '',
+      matchedValue: isMatch ? String(match.value ?? '') : '',
       matchScore: isMatch ? match.score : 0,
       matchStatus: isMatch ? 'Matched' : 'No match',
     }
